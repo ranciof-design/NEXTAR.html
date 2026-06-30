@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXTAR - Fondo de Ahorro y Crédito</title>
+    
+    <!-- Cargar Supabase solo UNA vez -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            min-height: 100vh;
+            color: white;
+        }
+        .screen {
+            display: none;
+            min-height: 100vh;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+        .active {
+            display: flex;
+        }
+        .container {
+            width: 100%;
+            max-width: 1400px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        .home-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: center;
+        }
+        .title-area h1 {
+            font-size: 58px;
+            margin-bottom: 15px;
+        }
+        .title-area p {
+            color: #94a3b8;
+            line-height: 1.7;
+            font-size: 20px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .option-btn {
+            border: none;
+            padding: 25px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .option-btn:hover {
+            transform: translateY(-4px);
+        }
+        .btn-socio {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-admin {
+            background: #dc2626;
+            color: white;
+        }
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .topbar h2 {
+            font-size: 35px;
+        }
+        .logout {
+            background: #334155;
+            border: none;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        .admin-card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 35px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .admin-card:hover {
+            transform: translateY(-5px);
+            border: 1px solid #3b82f6;
+        }
+        .admin-card h3 {
+            margin-bottom: 10px;
+        }
+        .admin-card p {
+            color: #94a3b8;
+        }
+        .form-container {
+            max-width: 95%;
+            margin: auto;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: #0f172a;
+            color: white;
+        }
+        input[type="file"] {
+            padding: 10px;
+            background: #0f172a;
+        }
+        button {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-next {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-save {
+            background: #16a34a;
+            color: white;
+        }
+        .btn-back {
+            background: #334155;
+            color: white;
+        }
+        .btn-solicitar {
+            background: #fbbf24;
+            color: #1e293b;
+            margin-top: 20px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .credentials {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        .hidden {
+            display: none;
+        }
+        .success {
+            background: #14532d;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .socio-item {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .socio-item:hover {
+            transform: scale(1.02);
+            border: 1px solid #3b82f6;
+        }
+        .detail-box {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .dashboard-card {
+            background: #1e293b;
+            border-radius: 18px;
+            padding: 20px;
+        }
+        .dashboard-card h3 {
+            color: #38bdf8;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .dashboard-card p {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .credit-status-active {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .credit-status-inactive {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .mes-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .mes-item input {
+            width: 25px;
+            height: 25px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #16a34a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+        .notification-badge {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 8px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .pagos-container {
+            overflow-x: auto;
+        }
+        .tabla-pagos {
+            width: 100%;
+            border-collapse: collapse;
+            background: #0f172a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .tabla-pagos th,
+        .tabla-pagos td {
+            border: 1px solid #334155;
+            padding: 12px;
+            text-align: center;
+            color: white;
+        }
+        .tabla-pagos th {
+            background: #1e293b;
+            color: #38bdf8;
+            font-weight: bold;
+        }
+        .tabla-pagos input {
+            width: 100px;
+            padding: 8px;
+            text-align: center;
+            background: #1e293b;
+            border: 1px solid #3b82f6;
+        }
+        .total-aportes {
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .btn-guardar-pagos {
+            background: #16a34a;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .historial-pagos {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .tabla-historial {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tabla-historial th,
+        .tabla-historial td {
+            border: 1px solid #334155;
+            padding: 8px;
+            text-align: center;
+        }
+        .tabla-historial th {
+            background: #1e293b;
+            color: #38bdf8;
+        }
+        .pago-realizado {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        .solicitud-item {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #fbbf24;
+        }
+        .btn-aprobar {
+            background: #16a34a;
+            margin-right: 10px;
+        }
+        .btn-rechazar {
+            background: #dc2626;
+        }
+        .mensaje-notificacion {
+            background: #2563eb;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        .info-interes {
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #38bdf8;
+        }
+        .reporte-container {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .reporte-tabla {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .reporte-tabla th,
+        .reporte-tabla td {
+            border: 1px solid #334155;
+            padding: 10px;
+            text-align: left;
+        }
+        .reporte-tabla th {
+            background: #1e293b;
+            color: #38bdf8;
+        }
+        .btn-reporte {
+            background: #8b5cf6;
+            margin: 5px;
+        }
+        .mora-alerta {
+            background: #dc2626;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .documento-lista {
+            list-style: none;
+            padding: 0;
+        }
+        .documento-lista li {
+            background: #1e293b;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-ver {
+            background: #3b82f6;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .estado-mora {
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .estado-normal {
+            background: #22c55e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 18px;
+            padding: 0;
+            color: #94a3b8;
+        }
+        .cargando {
+            text-align: center;
+            padding: 50px;
+            font-size: 24px;
+            color: #38bdf8;
+        }
+        .sync-status {
+            background: #1e293b;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #22c55e;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- PANTALLA DE CARGA -->
+    <div class="screen active" id="loadingScreen">
+        <div class="container">
+            <div class="card" style="text-align:center; padding:60px;">
+                <h1 style="font-size:48px; margin-bottom:20px;">☁️ NEXTAR</h1>
+                <div class="cargando">🔄 Conectando con la nube...</div>
+                <p style="color:#94a3b8; margin-top:20px;">Sincronizando datos con Supabase</p>
+                <div id="statusMsg" style="margin-top:15px; color:#fbbf24;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOME -->
+    <div class="screen" id="homeScreen">
+        <div class="container">
+            <div class="card home-layout">
+                <div class="title-area">
+                    <h1>NEXTAR ☁️</h1>
+                    <p>Núcleo de Expansión y Ahorro Responsable<br>Sistema en la nube - Datos sincronizados</p>
+                    <p style="font-size:14px; color:#22c55e; margin-top:10px;">✅ Conectado a Supabase</p>
+                </div>
+                <div class="options">
+                    <button class="option-btn btn-socio" onclick="openLoginSocio()">Ingresar como Socio</button>
+                    <button class="option-btn btn-admin" onclick="openAdminLogin()">Ingresar como Administrador</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN ADMIN -->
+    <div class="screen" id="adminLoginScreen">
+        <div class="container form-container">
+            <div class="card">
+                <div class="topbar">
+                    <h2>🔐 Acceso Administrador</h2>
+                    <button class="logout" onclick="goHome()">← Volver</button>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña de Administrador</label>
+                    <div class="password-container">
+                        <input type="password" id="adminPassword" placeholder="Ingrese la contraseña" onkeypress="if(event.key==='Enter') verifyAdminLogin()">
+                        <button class="toggle-password" onclick="toggleAdminPassword()">👁️</button>
+                    </div>
+                </div>
+                <button class="btn-next" onclick="verifyAdminLogin()">Ingresar</button>
+                <div id="adminErrorMsg" style="color:#ef4444; margin-top:15px; text-align:center; display:none;">❌ Contraseña incorrecta</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL ADMIN -->
+    <div class="screen" id="adminScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar">
+                    <div>
+                        <h2>Panel Administrativo - NEXTAR ☁️</h2>
+                        <span class="sync-status">✅ Sincronizado</span>
+                    </div>
+                    <button class="logout" onclick="goHome()">Cerrar sesión</button>
+                </div>
+                <div style="background:#1e293b; padding:10px 20px; border-radius:12px; margin-bottom:20px; text-align:center; color:#38bdf8;">
+                    🌐 Datos sincronizados en la nube - Acceso desde cualquier computadora
+                </div>
+                <div class="admin-grid">
+                    <div class="admin-card" onclick="openRegisterSocio()"><h3>Registrar Nuevo Socio</h3><p>Crear nuevos socios</p></div>
+                    <div class="admin-card" onclick="openSociosList()"><h3>Lista de Socios</h3><p>Visualizar información</p></div>
+                    <div class="admin-card" onclick="openSolicitudesCredito()"><h3>Solicitudes de Crédito <span id="solicitudesBadge" class="notification-badge" style="display:none;">0</span></h3><p>Revisar solicitudes pendientes</p></div>
+                    <div class="admin-card" onclick="openCreditosScreen()"><h3>Estado de Créditos</h3><p>Gestionar préstamos</p></div>
+                    <div class="admin-card" onclick="openPagosAportes()"><h3>Pagos de Aportes</h3><p>$5 Aporte + $1 Rifa = $6/mes</p></div>
+                    <div class="admin-card" onclick="verBalanceCaja()"><h3>Balance de Caja</h3><p>Visualizar balance actual</p></div>
+                    <div class="admin-card" onclick="actualizarCaja()"><h3>Actualizar Estado Caja</h3><p>Modificar caja general</p></div>
+                    <div class="admin-card" onclick="openReportes()"><h3>Reportes Asamblea</h3><p>Informes financieros</p></div>
+                    <div class="admin-card" onclick="openDistribucionUtilidades()"><h3>Distribución Utilidades</h3><p>Calcular y distribuir</p></div>
+                    <div class="admin-card" onclick="eliminarSociosView()"><h3>Eliminar Socios</h3><p>Eliminar registros</p></div>
+                    <div class="admin-card" onclick="openAsistenciaScreen()"><h3>Control Asistencia</h3><p>Historial reuniones</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REGISTRO SOCIO -->
+    <div class="screen" id="registerSocioScreen">
+        <div class="container form-container">
+            <div class="card" id="step1">
+                <div class="topbar"><h2>Registrar Socio</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div class="form-group"><label>Nombres</label><input type="text" id="nombres"></div>
+                <div class="form-group"><label>Apellidos</label><input type="text" id="apellidos"></div>
+                <div class="form-group"><label>Cédula</label><input type="text" id="cedula"></div>
+                <div class="form-group"><label>Correo</label><input type="email" id="correo"></div>
+                <div class="form-group"><label>Teléfono</label><input type="text" id="telefono"></div>
+                <div class="form-group"><label>Documento de Identidad (PDF/Imagen)</label><input type="file" id="documentoCedula" accept=".pdf,.jpg,.png,.jpeg"></div>
+                <button class="btn-next" onclick="nextStep()">Siguiente</button>
+            </div>
+            <div class="card hidden" id="step2">
+                <h2>Información Financiera</h2>
+                <div class="credentials"><p id="showUser"></p><p id="showPass"></p></div>
+                <div class="form-group"><label>Aporte Inicial (mínimo 50% del capital promedio)</label><input type="number" id="aporte" step="0.01"></div>
+                <div class="form-group"><label>Fecha Ingreso</label><input type="date" id="fechaIngreso"></div>
+                <div class="form-group"><label>Observaciones</label><input type="text" id="observaciones"></div>
+                <div class="button-group">
+                    <button class="btn-back" onclick="backStep()">← Volver</button>
+                    <button class="btn-save" onclick="saveSocio()">Guardar Socio</button>
+                </div>
+                <div class="success hidden" id="successMessage">Socio registrado correctamente</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN SOCIO -->
+    <div class="screen" id="loginSocioScreen">
+        <div class="container form-container">
+            <div class="card">
+                <div class="topbar"><h2>Ingreso Socio NEXTAR</h2><button class="logout" onclick="goHome()">← Volver</button></div>
+                <div class="form-group"><label>Usuario</label><input type="text" id="loginUsuario"></div>
+                <div class="form-group"><label>Contraseña</label><input type="password" id="loginPassword"></div>
+                <button class="btn-next" onclick="loginSocio()">Ingresar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD SOCIO -->
+    <div class="screen" id="socioDashboardScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar"><h2 id="welcomeSocio"></h2><button class="logout" onclick="goHome()">Cerrar sesión</button></div>
+                <div class="dashboard-grid" id="dashboardGrid"></div>
+                <button class="btn-solicitar" onclick="abrirFormularioCredito()">📝 Solicitar Crédito</button>
+                <div id="formularioCredito" class="detail-box hidden" style="margin-top:20px;">
+                    <h3>Solicitar Nuevo Crédito</h3>
+                    <div class="info-interes">💡 El interés es igual al número de meses: 3 meses = 3% | 6 meses = 6% | 12 meses = 12%</div>
+                    <br>
+                    <div class="form-group"><label>Monto deseado (máximo 3x su capital: $<span id="limiteCredito">0</span>)</label><input type="number" id="solicitudMonto" placeholder="Ej: 10000"></div>
+                    <div class="form-group"><label>Meses a pagar</label><input type="number" id="solicitudMeses" placeholder="Ej: 12" min="1" max="36"></div>
+                    <div class="form-group"><label>Motivo del crédito</label><input type="text" id="solicitudMotivo" placeholder="Ej: Compra de electrodomésticos"></div>
+                    <div class="form-group"><label>Letra de cambio (documento)</label><input type="file" id="letraCambio" accept=".pdf,.jpg,.png,.jpeg"></div>
+                    <div class="button-group">
+                        <button class="btn-back" onclick="cerrarFormularioCredito()">Cancelar</button>
+                        <button class="btn-save" onclick="enviarSolicitudCredito()">Enviar Solicitud</button>
+                    </div>
+                </div>
+                <div id="mensajesSocio" class="detail-box" style="margin-top:20px;"><h3>📬 Notificaciones</h3><br><div id="notificacionesSocio"></div></div>
+                <div class="detail-box" style="margin-top:20px;"><h3>📋 Historial de Pagos del Crédito</h3><br><div id="historialPagosSocio"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LISTA SOCIOS -->
+    <div class="screen" id="sociosListScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar"><h2>Lista de Socios</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div id="sociosContainer" class="admin-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DETALLE SOCIO -->
+    <div class="screen" id="detailSocioScreen">
+        <div class="container form-container">
+            <div class="card">
+                <div class="topbar"><h2>Información Socio</h2><button class="logout" onclick="openSociosList()">← Volver</button></div>
+                <div id="detailContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ELIMINAR SOCIOS -->
+    <div class="screen" id="eliminarSociosScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar"><h2>Eliminar Socios</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div id="eliminarSociosContainer" class="admin-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOLICITUDES CRÉDITO -->
+    <div class="screen" id="solicitudesScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar"><h2>Solicitudes de Crédito</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div id="solicitudesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREDITOS -->
+    <div class="screen" id="creditosScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar"><h2>Estado de Créditos</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div id="creditosContainer" class="admin-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GESTION CREDITOS -->
+    <div class="screen" id="manageCreditoScreen">
+        <div class="container form-container">
+            <div class="card">
+                <div class="topbar"><h2 id="creditoSocioNombre"></h2><button class="logout" onclick="openCreditosScreen()">← Volver</button></div>
+                <div class="info-interes" style="margin-bottom:20px;">💡 Límite máximo de crédito: <strong id="limiteMostrado">$0</strong> (3x capital aportado)</div>
+                <div class="detail-box">
+                    <h3>Nuevo Crédito</h3><br>
+                    <div class="form-group"><label>Monto del Crédito</label><input type="number" id="nuevoMontoCredito" placeholder="Ej: 10000" oninput="calcularInteresAuto()"></div>
+                    <div class="form-group"><label>Meses a pagar</label><input type="number" id="nuevoMesesCredito" placeholder="Ej: 12" min="1" max="36" oninput="calcularInteresAuto()"></div>
+                    <div class="form-group"><label>Fecha del Crédito</label><input type="date" id="fechaCredito"></div>
+                    <div class="info-interes" id="resumenCredito">Resumen: $0 a 0 meses = 0% interés → Total: $0</div>
+                    <button class="btn-save" onclick="crearCredito()">Crear Crédito</button>
+                </div>
+                <div class="detail-box">
+                    <h3>Registrar Pago</h3><br>
+                    <div class="form-group"><label>Valor del Pago</label><input type="number" id="valorPagoCredito" placeholder="Ej: 500"></div>
+                    <div class="form-group"><label>Fecha del Pago</label><input type="date" id="fechaPagoCredito"></div>
+                    <button class="btn-next" onclick="registrarPagoCredito()">Registrar Pago</button>
+                </div>
+                <div class="detail-box"><h3>Estado Actual del Crédito</h3><br><div id="estadoCreditoActual"></div></div>
+                <div class="detail-box"><h3>📋 Historial de Pagos</h3><br><div id="historialPagos" class="historial-pagos"></div></div>
+                <div class="detail-box"><h3>📎 Documentos del Crédito</h3><br><div id="documentosCredito"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ASISTENCIA -->
+    <div class="screen" id="asistenciaScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar"><h2>Control Asistencia</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div id="asistenciaContainer" class="admin-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GESTION ASISTENCIA -->
+    <div class="screen" id="manageAsistenciaScreen">
+        <div class="container form-container">
+            <div class="card">
+                <div class="topbar"><h2 id="asistenciaNombreSocio"></h2><button class="logout" onclick="openAsistenciaScreen()">← Volver</button></div>
+                <div class="detail-box"><div id="checkboxesMeses"></div></div>
+                <div class="detail-box"><h3>Puntaje Total</h3><br><p id="puntajeAsistencia" style="font-size:30px;color:#38bdf8;font-weight:bold;">0/12</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGOS APORTES -->
+    <div class="screen" id="pagosAportesScreen">
+        <div class="container form-container">
+            <div class="card">
+                <div class="topbar"><h2>Pagos de Aportes ($5 Aporte + $1 Rifa = $6/mes)</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div id="pagosAportesContainer" class="pagos-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORTES -->
+    <div class="screen" id="reportesScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar"><h2>Reportes para Asamblea</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div id="reportesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UTILIDADES -->
+    <div class="screen" id="utilidadesScreen">
+        <div class="container">
+            <div class="card">
+                <div class="topbar"><h2>Distribución de Utilidades</h2><button class="logout" onclick="backAdmin()">← Volver</button></div>
+                <div id="utilidadesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ============================================
+        const SUPABASE_URL = 'https://srvpjjpfkhjyolnweitr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydnBqanBma2hqeW9sbndlaXRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODMxOTQsImV4cCI6MjA5ODM1OTE5NH0.MWDYiWdsbUbAH0XkpGkkr8NCb2vA_1c72kxW5fOiU48';
+
+        // Crear cliente de Supabase (SOLO UNA VEZ)
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+
+        let socios = [];
+        let cajaGeneral = 3000;
+        let socioLogueado = null;
+        let socioCreditoActual = null;
+        let socioAsistenciaActual = null;
+        let solicitudesCredito = [];
+
+        const ADMIN_PASSWORD = "Nextar2026";
+        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre",
+            "Noviembre", "Diciembre"
+        ];
+        const APORTE_MENSUAL_BASE = 5;
+        const RIFA_MENSUAL = 1;
+        const APORTE_TOTAL_MENSUAL = APORTE_MENSUAL_BASE + RIFA_MENSUAL;
+        const INTERES_MORA_MENSUAL = 2;
+        const DIAS_MORA = 5;
+
+        // ============================================
+        // FUNCIONES DE SINCRONIZACIÓN CON SUPABASE
+        // ============================================
+
+        function mostrarEstado(mensaje) {
+            const status = document.getElementById('statusMsg');
+            if (status) status.innerHTML = mensaje;
+            console.log(mensaje);
+        }
+
+        async function cargarDatos() {
+            try {
+                mostrarEstado('🔄 Conectando a Supabase...');
+
+                // Verificar conexión
+                const { data: testData, error: testError } = await supabase
+                    .from('configuracion')
+                    .select('*')
+                    .limit(1);
+
+                if (testError) {
+                    mostrarEstado('❌ Error de conexión: ' + testError.message);
+                    throw testError;
+                }
+
+                mostrarEstado('✅ Conectado, cargando socios...');
+
+                // Cargar socios
+                const { data: sociosData, error: sociosError } = await supabase
+                    .from('socios')
+                    .select('*');
+
+                if (sociosError) throw sociosError;
+
+                mostrarEstado('✅ Socios cargados (' + (sociosData?.length || 0) + ')...');
+
+                // Cargar pagos mensuales
+                const { data: pagosData, error: pagosError } = await supabase
+                    .from('pagos_mensuales')
+                    .select('*');
+
+                if (pagosError) throw pagosError;
+
+                mostrarEstado('✅ Pagos cargados...');
+
+                // Cargar asistencias
+                const { data: asistenciasData, error: asistenciasError } = await supabase
+                    .from('asistencias')
+                    .select('*');
+
+                if (asistenciasError) throw asistenciasError;
+
+                mostrarEstado('✅ Asistencias cargadas...');
+
+                // Cargar historial de pagos
+                const { data: historialData, error: historialError } = await supabase
+                    .from('historial_pagos')
+                    .select('*');
+
+                if (historialError) throw historialError;
+
+                mostrarEstado('✅ Historial cargado...');
+
+                // Cargar notificaciones
+                const { data: notificacionesData, error: notificacionesError } = await supabase
+                    .from('notificaciones')
+                    .select('*');
+
+                if (notificacionesError) throw notificacionesError;
+
+                mostrarEstado('✅ Notificaciones cargadas...');
+
+                // Cargar documentos
+                const { data: documentosData, error: documentosError } = await supabase
+                    .from('documentos_letra')
+                    .select('*');
+
+                if (documentosError) throw documentosError;
+
+                mostrarEstado('✅ Documentos cargados...');
+
+                // Cargar solicitudes
+                const { data: solicitudesData, error: solicitudesError } = await supabase
+                    .from('solicitudes_credito')
+                    .select('*');
+
+                if (solicitudesError) throw solicitudesError;
+
+                mostrarEstado('✅ Solicitudes cargadas...');
+
+                // Cargar configuración
+                const { data: configData, error: configError } = await supabase
+                    .from('configuracion')
+                    .select('*')
+                    .eq('clave', 'caja_general')
+                    .single();
+
+                if (configError && configError.code !== 'PGRST116') throw configError;
+
+                // Procesar datos
+                socios = sociosData || [];
+                cajaGeneral = configData ? parseFloat(configData.valor) : 3000;
+                solicitudesCredito = solicitudesData || [];
+
+                // Estructurar datos de socios
+                socios.forEach(socio => {
+                    socio.pagosMensuales = {};
+                    meses.forEach(mes => {
+                        const pago = pagosData?.find(p => p.socio_id === socio.id && p.mes === mes);
+                        socio.pagosMensuales[mes] = {
+                            aporte: pago ? pago.aporte : 0,
+                            rifa: pago ? pago.rifa : 0
+                        };
+                    });
+
+                    socio.asistencias = {};
+                    meses.forEach(mes => {
+                        const asis = asistenciasData?.find(a => a.socio_id === socio.id && a.mes === mes);
+                        socio.asistencias[mes] = asis ? asis.asistio : false;
+                    });
+
+                    socio.historialPagos = historialData?.filter(h => h.socio_id === socio.id) || [];
+                    socio.notificaciones = notificacionesData?.filter(n => n.socio_id === socio.id) || [];
+                    socio.documentos = {
+                        cedula: socio.documentos_cedula || null,
+                        letraCambio: documentosData?.filter(d => d.socio_id === socio.id) || []
+                    };
+                });
+
+                mostrarEstado('✅ ¡Todos los datos cargados!');
+                actualizarBadgeSolicitudes();
+
+                // Ocultar carga y mostrar home
+                document.getElementById('loadingScreen').classList.remove('active');
+                document.getElementById('homeScreen').classList.add('active');
+
+                mostrarToast('📂 Datos sincronizados desde la nube');
+
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                document.getElementById('statusMsg').innerHTML = '❌ Error: ' + error.message;
+
+                // Si hay error, mostrar home de todas formas después de 3 segundos
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').classList.remove('active');
+                    document.getElementById('homeScreen').classList.add('active');
+                    mostrarToast('⚠️ Modo local - Los datos no están sincronizados');
+                }, 3000);
+            }
+        }
+
+        async function guardarDatos() {
+            try {
+                mostrarToast('💾 Guardando en la nube...');
+
+                // Guardar cada socio
+                for (const socio of socios) {
+                    const socioData = {
+                        nombres: socio.nombres,
+                        apellidos: socio.apellidos,
+                        cedula: socio.cedula,
+                        correo: socio.correo,
+                        telefono: socio.telefono,
+                        usuario: socio.usuario,
+                        password: socio.password,
+                        aporte_inicial: socio.aporteInicial || 0,
+                        capital_aportado: socio.capitalAportado || 0,
+                        fecha_ingreso: socio.fechaIngreso,
+                        observaciones: socio.observaciones || '',
+                        credito_activo: socio.creditoActivo || false,
+                        valor_credito: socio.valorCredito || 0,
+                        meses_credito: socio.mesesCredito || 0,
+                        cuota_mensual: socio.cuotaMensual || 0,
+                        total_pagar: socio.totalPagar || 0,
+                        saldo_pendiente: socio.saldoPendiente || 0,
+                        pagado: socio.pagado || 0,
+                        fecha_credito: socio.fechaCredito || '',
+                        mora_acumulada: socio.moraAcumulada || 0,
+                        en_mora: socio.enMora || false,
+                        puntaje_asistencia: socio.puntajeAsistencia || 0,
+                        score: socio.score || 100,
+                        documentos_cedula: socio.documentos?.cedula || null
+                    };
+
+                    if (socio.id) {
+                        await supabase
+                            .from('socios')
+                            .update(socioData)
+                            .eq('id', socio.id);
+                    } else {
+                        const { data, error } = await supabase
+                            .from('socios')
+                            .insert([socioData])
+                            .select();
+                        if (error) throw error;
+                        if (data && data[0]) {
+                            socio.id = data[0].id;
+                        }
+                    }
+
+                    // Guardar pagos mensuales
+                    if (socio.pagosMensuales) {
+                        for (const mes of meses) {
+                            const pago = socio.pagosMensuales[mes];
+                            if (pago) {
+                                await supabase
+                                    .from('pagos_mensuales')
+                                    .upsert({
+                                        socio_id: socio.id,
+                                        mes: mes,
+                                        aporte: pago.aporte || 0,
+                                        rifa: pago.rifa || 0
+                                    });
+                            }
+                        }
+                    }
+
+                    // Guardar asistencias
+                    if (socio.asistencias) {
+                        for (const mes of meses) {
+                            await supabase
+                                .from('asistencias')
+                                .upsert({
+                                    socio_id: socio.id,
+                                    mes: mes,
+                                    asistio: socio.asistencias[mes] || false
+                                });
+                        }
+                    }
+                }
+
+                // Guardar solicitudes de crédito
+                for (const solicitud of solicitudesCredito) {
+                    if (solicitud.id) {
+                        await supabase
+                            .from('solicitudes_credito')
+                            .update({
+                                estado: solicitud.estado
+                            })
+                            .eq('id', solicitud.id);
+                    }
+                }
+
+                // Guardar caja general
+                await supabase
+                    .from('configuracion')
+                    .upsert({
+                        clave: 'caja_general',
+                        valor: cajaGeneral.toString()
+                    });
+
+                mostrarToast('✅ Datos guardados en la nube');
+
+            } catch (error) {
+                console.error('Error al guardar datos:', error);
+                mostrarToast('❌ Error al guardar: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE INTERÉS
+        // ============================================
+
+        function calcularInteresPorMeses(meses) {
+            return meses;
+        }
+
+        function calcularTotalCredito(monto, meses) {
+            let interes = calcularInteresPorMeses(meses);
+            let total = monto + (monto * interes / 100);
+            return { total: total, interes: interes, cuota: total / meses };
+        }
+
+        function calcularLimiteCredito(capitalAportado) {
+            return capitalAportado * 3;
+        }
+
+        function calcularEvaluacionSocio(socio) {
+            let puntaje = 0;
+            if (socio.historialPagos && socio.historialPagos.length > 0) {
+                let pagosTotales = socio.historialPagos.reduce((sum, p) => sum + p.monto, 0);
+                let porcentajePagado = (pagosTotales / socio.totalPagar) * 100;
+                puntaje += (porcentajePagado > 100 ? 100 : porcentajePagado) * 0.4;
+            } else if (!socio.creditoActivo) {
+                puntaje += 40;
+            }
+            let aportesPagados = 0;
+            if (socio.pagosMensuales) {
+                Object.values(socio.pagosMensuales).forEach(p => {
+                    if (p.aporte > 0) aportesPagados++;
+                });
+            }
+            let porcentajeAportes = (aportesPagados / 12) * 100;
+            puntaje += (porcentajeAportes > 100 ? 100 : porcentajeAportes) * 0.3;
+            puntaje += socio.puntajeAsistencia * (20 / 12);
+            puntaje += 10;
+            return Math.min(puntaje, 100);
+        }
+
+        function mostrarToast(mensaje) {
+            // Eliminar toasts anteriores
+            document.querySelectorAll('.toast').forEach(el => el.remove());
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = mensaje;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function actualizarBadgeSolicitudes() {
+            const pendientes = solicitudesCredito.filter(s => s.estado === 'pendiente').length;
+            const badge = document.getElementById('solicitudesBadge');
+            if (badge) badge.style.display = pendientes > 0 ? 'inline-block' : 'none';
+            if (badge && pendientes > 0) badge.textContent = pendientes;
+        }
+
+        // ============================================
+        // FUNCIONES DE NAVEGACIÓN
+        // ============================================
+
+        function hideAllScreens() {
+            document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+        }
+
+        function goHome() {
+            hideAllScreens();
+            document.getElementById("homeScreen").classList.add("active");
+            socioLogueado = null;
+        }
+
+        function openAdminLogin() {
+            hideAllScreens();
+            document.getElementById("adminLoginScreen").classList.add("active");
+            document.getElementById("adminPassword").value = "";
+            document.getElementById("adminErrorMsg").style.display = "none";
+        }
+
+        function toggleAdminPassword() {
+            const pwdInput = document.getElementById("adminPassword");
+            pwdInput.type = pwdInput.type === "password" ? "text" : "password";
+        }
+
+        function verifyAdminLogin() {
+            const password = document.getElementById("adminPassword").value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById("adminErrorMsg").style.display = "none";
+                hideAllScreens();
+                document.getElementById("adminScreen").classList.add("active");
+                actualizarBadgeSolicitudes();
+                mostrarToast("✅ Acceso concedido");
+            } else {
+                document.getElementById("adminErrorMsg").style.display = "block";
+                mostrarToast("❌ Contraseña incorrecta");
+            }
+        }
+
+        function backAdmin() {
+            hideAllScreens();
+            document.getElementById("adminScreen").classList.add("active");
+            actualizarBadgeSolicitudes();
+        }
+
+        function openRegisterSocio() {
+            hideAllScreens();
+            document.getElementById("registerSocioScreen").classList.add("active");
+        }
+
+        function openLoginSocio() {
+            hideAllScreens();
+            document.getElementById("loginSocioScreen").classList.add("active");
+        }
+
+        // ============================================
+        // REGISTRO DE SOCIO
+        // ============================================
+
+        let generatedUser = "",
+            generatedPass = "";
+        let documentoCedulaData = null;
+
+        function nextStep() {
+            let nombres = document.getElementById("nombres").value;
+            let apellidos = document.getElementById("apellidos").value;
+            let cedula = document.getElementById("cedula").value;
+            let file = document.getElementById("documentoCedula").files[0];
+
+            if (!nombres || !apellidos || !cedula) {
+                alert("Complete nombres, apellidos y cédula");
+                return;
+            }
+
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    documentoCedulaData = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            generatedUser = nombres.split(" ")[0].toLowerCase() + apellidos.charAt(0).toLowerCase() + cedula.slice(-1);
+            generatedPass = cedula.slice(-4);
+
+            document.getElementById("showUser").innerHTML = "Usuario: " + generatedUser;
+            document.getElementById("showPass").innerHTML = "Contraseña: " + generatedPass;
+
+            document.getElementById("step1").classList.add("hidden");
+            document.getElementById("step2").classList.remove("hidden");
+        }
+
+        function backStep() {
+            document.getElementById("step2").classList.add("hidden");
+            document.getElementById("step1").classList.remove("hidden");
+        }
+
+        async function saveSocio() {
+            let capitalPromedio = 0;
+            if (socios.length > 0) {
+                let totalCapital = socios.reduce((sum, s) => sum + (s.capitalAportado || 0), 0);
+                capitalPromedio = totalCapital / socios.length;
+            }
+
+            let aporteMinimo = capitalPromedio * 0.5;
+            let aporteIngresado = parseFloat(document.getElementById("aporte").value) || 0;
+
+            if (aporteIngresado < aporteMinimo && socios.length > 0) {
+                alert(`El aporte mínimo de ingreso es el 50% del capital promedio ($${aporteMinimo.toFixed(2)})`);
+                return;
+            }
+
+            let socio = {
+                nombres: document.getElementById("nombres").value,
+                apellidos: document.getElementById("apellidos").value,
+                cedula: document.getElementById("cedula").value,
+                correo: document.getElementById("correo").value,
+                telefono: document.getElementById("telefono").value,
+                usuario: generatedUser,
+                password: generatedPass,
+                aporteInicial: aporteIngresado,
+                capitalAportado: aporteIngresado,
+                fechaIngreso: document.getElementById("fechaIngreso").value,
+                observaciones: document.getElementById("observaciones").value,
+                creditoActivo: false,
+                valorCredito: 0,
+                mesesCredito: 0,
+                cuotaMensual: 0,
+                totalPagar: 0,
+                saldoPendiente: 0,
+                pagado: 0,
+                fechaCredito: "",
+                historialPagos: [],
+                notificaciones: [{ fecha: new Date().toLocaleDateString(), mensaje: "Bienvenido a NEXTAR. Recuerde que el aporte mensual es de $5 + $1 de rifa = $6", tipo: "info" }],
+                moraAcumulada: 0,
+                enMora: false,
+                documentos: { cedula: documentoCedulaData, letraCambio: [] },
+                pagosMensuales: {},
+                asistencias: {},
+                puntajeAsistencia: 0,
+                score: 100
+            };
+
+            meses.forEach(mes => { socio.pagosMensuales[mes] = { aporte: 0, rifa: 0 }; });
+            meses.forEach(mes => { socio.asistencias[mes] = false; });
+
+            socios.push(socio);
+            await guardarDatos();
+
+            document.getElementById("successMessage").classList.remove("hidden");
+            setTimeout(() => { backAdmin();
+                resetForms(); }, 1500);
+        }
+
+        function resetForms() {
+            document.querySelectorAll("input").forEach(i => i.value = "");
+            documentoCedulaData = null;
+            document.getElementById("step1").classList.remove("hidden");
+            document.getElementById("step2").classList.add("hidden");
+            document.getElementById("successMessage").classList.add("hidden");
+        }
+
+        // ============================================
+        // LOGIN SOCIO
+        // ============================================
+
+        function loginSocio() {
+            let socio = socios.find(s => s.usuario === document.getElementById("loginUsuario").value && s.password === document
+                .getElementById("loginPassword").value);
+            if (!socio) { alert("Usuario o contraseña incorrectos"); return; }
+            socioLogueado = socio;
+            openSocioDashboard();
+        }
+
+        function openSocioDashboard() {
+            hideAllScreens();
+            document.getElementById("socioDashboardScreen").classList.add("active");
+
+            let totalAportes = socioLogueado.capitalAportado || socioLogueado.aporteInicial || 0;
+            let limiteCredito = calcularLimiteCredito(totalAportes);
+            let evaluacion = calcularEvaluacionSocio(socioLogueado);
+
+            document.getElementById("limiteCredito").innerHTML = limiteCredito;
+            document.getElementById("welcomeSocio").innerHTML = "Bienvenido, " + socioLogueado.nombres;
+
+            let dashboardHtml = `
+                <div class="dashboard-card"><h3>Capital Aportado</h3><p>$${totalAportes.toFixed(2)}</p></div>
+                <div class="dashboard-card"><h3>Crédito Activo</h3><p>${socioLogueado.creditoActivo ? 'Sí' : 'No'}</p></div>
+                <div class="dashboard-card"><h3>Valor Crédito</h3><p>$${socioLogueado.valorCredito || 0}</p></div>
+                <div class="dashboard-card"><h3>Cuota Mensual</h3><p>$${socioLogueado.cuotaMensual || 0}</p></div>
+                <div class="dashboard-card"><h3>Saldo Pendiente</h3><p>$${socioLogueado.saldoPendiente || 0}</p></div>
+                <div class="dashboard-card"><h3>Límite Crédito (3x1)</h3><p>$${limiteCredito}</p></div>
+                <div class="dashboard-card"><h3>Evaluación Anual</h3><p>${evaluacion.toFixed(1)}%</p></div>
+                <div class="dashboard-card"><h3>Estado</h3><p class="${socioLogueado.enMora ? 'estado-mora' : 'estado-normal'}">${socioLogueado.enMora ? 'EN MORA' : 'ACTIVO'}</p></div>
+            `;
+            document.getElementById("dashboardGrid").innerHTML = dashboardHtml;
+
+            mostrarNotificacionesSocio();
+            mostrarHistorialPagosSocio();
+        }
+
+        function mostrarNotificacionesSocio() {
+            let container = document.getElementById("notificacionesSocio");
+            if (!socioLogueado.notificaciones || socioLogueado.notificaciones.length === 0) {
+                container.innerHTML = '<p style="color:#94a3b8;">No hay notificaciones</p>';
+                return;
+            }
+            let html = '';
+            socioLogueado.notificaciones.slice().reverse().forEach(notif => {
+                let color = notif.tipo === 'aprobado' ? '#22c55e' : (notif.tipo === 'rechazado' ? '#ef4444' : '#38bdf8');
+                html +=
+                    `<div class="mensaje-notificacion" style="background:${color}20; border-left:3px solid ${color};"><p><strong>${notif.fecha}</strong></p><p>${notif.mensaje}</p></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function mostrarHistorialPagosSocio() {
+            let container = document.getElementById("historialPagosSocio");
+            if (!socioLogueado.historialPagos || socioLogueado.historialPagos.length === 0) {
+                container.innerHTML = '<p style="color:#94a3b8;">No hay pagos registrados aún</p>';
+                return;
+            }
+            let html =
+                `<table class="tabla-historial"><thead><tr><th>Fecha</th><th>Monto Pagado</th><th>Saldo Restante</th></tr></thead><tbody>`;
+            socioLogueado.historialPagos.forEach(pago => {
+                html +=
+                    `<tr class="pago-realizado"><td>${pago.fecha}</td><td>$${pago.monto.toFixed(2)}</td><td>$${pago.saldoRestante.toFixed(2)}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // SOLICITUD DE CRÉDITO (SOCIO)
+        // ============================================
+
+        function abrirFormularioCredito() {
+            if (socioLogueado.enMora) {
+                alert("❌ No puede solicitar créditos porque tiene mora activa. Regularice su situación.");
+                return;
+            }
+            if (socioLogueado.creditoActivo) {
+                alert("Ya tiene un crédito activo. No puede solicitar otro hasta pagar el actual.");
+                return;
+            }
+            document.getElementById("formularioCredito").classList.remove("hidden");
+            let limite = calcularLimiteCredito(socioLogueado.capitalAportado || socioLogueado.aporteInicial || 0);
+            document.getElementById("limiteCredito").innerHTML = limite;
+        }
+
+        function cerrarFormularioCredito() {
+            document.getElementById("formularioCredito").classList.add("hidden");
+            document.getElementById("solicitudMonto").value = "";
+            document.getElementById("solicitudMeses").value = "";
+            document.getElementById("solicitudMotivo").value = "";
+        }
+
+        function enviarSolicitudCredito() {
+            let monto = parseFloat(document.getElementById("solicitudMonto").value);
+            let mesesCred = parseInt(document.getElementById("solicitudMeses").value);
+            let motivo = document.getElementById("solicitudMotivo").value;
+            let file = document.getElementById("letraCambio").files[0];
+            let limite = calcularLimiteCredito(socioLogueado.capitalAportado || socioLogueado.aporteInicial || 0);
+
+            if (!monto || !mesesCred) {
+                alert("Complete el monto y los meses");
+                return;
+            }
+            if (monto > limite) {
+                alert(`El monto solicitado ($${monto}) excede el límite de 3x su capital ($${limite})`);
+                return;
+            }
+            if (mesesCred < 1 || mesesCred > 36) {
+                alert("Los meses deben estar entre 1 y 36");
+                return;
+            }
+
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = async function(e) {
+                    await crearSolicitud(monto, mesesCred, motivo, e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                crearSolicitud(monto, mesesCred, motivo, null);
+            }
+        }
+
+        async function crearSolicitud(monto, mesesCred, motivo, letraData) {
+            let solicitud = {
+                socioId: socioLogueado.id,
+                socioNombre: socioLogueado.nombres + " " + socioLogueado.apellidos,
+                monto: monto,
+                meses: mesesCred,
+                interes: mesesCred,
+                motivo: motivo || "No especificado",
+                fecha: new Date().toLocaleDateString(),
+                estado: "pendiente",
+                documentoLetra: letraData
+            };
+
+            // Guardar en la base de datos
+            const { data, error } = await supabase
+                .from('solicitudes_credito')
+                .insert([{
+                    socio_id: solicitud.socioId,
+                    socio_nombre: solicitud.socioNombre,
+                    monto: solicitud.monto,
+                    meses: solicitud.meses,
+                    interes: solicitud.interes,
+                    motivo: solicitud.motivo,
+                    fecha: solicitud.fecha,
+                    estado: solicitud.estado,
+                    documento_letra: solicitud.documentoLetra
+                }])
+                .select();
+
+            if (error) {
+                mostrarToast('❌ Error al enviar: ' + error.message);
+                return;
+            }
+
+            if (data && data[0]) {
+                solicitud.id = data[0].id;
+            }
+
+            solicitudesCredito.push(solicitud);
+            actualizarBadgeSolicitudes();
+            cerrarFormularioCredito();
+
+            // Agregar notificación
+            const notif = {
+                fecha: new Date().toLocaleDateString(),
+                mensaje: `📝 Su solicitud de crédito por $${monto} ha sido enviada. Espere la respuesta del administrador.`,
+                tipo: "info"
+            };
+
+            await supabase
+                .from('notificaciones')
+                .insert([{
+                    socio_id: socioLogueado.id,
+                    fecha: notif.fecha,
+                    mensaje: notif.mensaje,
+                    tipo: notif.tipo
+                }]);
+
+            socioLogueado.notificaciones.push(notif);
+            mostrarToast("✅ Solicitud enviada");
+        }
+
+        // ============================================
+        // ADMIN: SOLICITUDES
+        // ============================================
+
+        function openSolicitudesCredito() {
+            hideAllScreens();
+            document.getElementById("solicitudesScreen").classList.add("active");
+            renderSolicitudes();
+        }
+
+        function renderSolicitudes() {
+            let container = document.getElementById("solicitudesContainer");
+            let pendientes = solicitudesCredito.filter(s => s.estado === "pendiente");
+            if (pendientes.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#94a3b8;">No hay solicitudes pendientes</p>';
+                return;
+            }
+            container.innerHTML = "";
+            pendientes.forEach((solicitud) => {
+                let total = solicitud.monto + (solicitud.monto * solicitud.interes / 100);
+                let cuota = total / solicitud.meses;
+                container.innerHTML += `
+                    <div class="solicitud-item">
+                        <h3>${solicitud.socioNombre}</h3>
+                        <p><strong>💰 Monto:</strong> $${solicitud.monto}</p>
+                        <p><strong>📅 Meses:</strong> ${solicitud.meses}</p>
+                        <p><strong>📈 Interés:</strong> ${solicitud.interes}%</p>
+                        <p><strong>💵 Total a pagar:</strong> $${total.toFixed(2)} (Cuota: $${cuota.toFixed(2)}/mes)</p>
+                        <p><strong>📝 Motivo:</strong> ${solicitud.motivo}</p>
+                        <p><strong>📆 Fecha:</strong> ${solicitud.fecha}</p>
+                        ${solicitud.documentoLetra ? `<p><strong>📎 Letra de cambio:</strong> <button class="btn-ver" onclick="verDocumento('${solicitud.documentoLetra}')">Ver Documento</button></p>` : ''}
+                        <br>
+                        <button class="btn-aprobar" onclick="aprobarSolicitud(${solicitud.id})">✅ Aprobar</button>
+                        <button class="btn-rechazar" onclick="rechazarSolicitud(${solicitud.id})">❌ Rechazar</button>
+                    </div>
+                `;
+            });
+        }
+
+        function verDocumento(dataUrl) {
+            window.open(dataUrl, '_blank');
+        }
+
+        async function aprobarSolicitud(id) {
+            let solicitud = solicitudesCredito.find(s => s.id === id);
+            if (!solicitud) return;
+
+            let socio = socios.find(s => s.id === solicitud.socioId);
+            if (!socio) return;
+
+            let total = solicitud.monto + (solicitud.monto * solicitud.interes / 100);
+            let cuota = total / solicitud.meses;
+
+            socio.creditoActivo = true;
+            socio.valorCredito = solicitud.monto;
+            socio.mesesCredito = solicitud.meses;
+            socio.cuotaMensual = cuota.toFixed(2);
+            socio.totalPagar = total.toFixed(2);
+            socio.saldoPendiente = total.toFixed(2);
+            socio.pagado = 0;
+            socio.fechaCredito = new Date().toISOString().split('T')[0];
+
+            if (solicitud.documentoLetra) {
+                await supabase
+                    .from('documentos_letra')
+                    .insert([{
+                        socio_id: socio.id,
+                        fecha: socio.fechaCredito,
+                        documento: solicitud.documentoLetra
+                    }]);
+                socio.documentos.letraCambio.push({ fecha: socio.fechaCredito, documento: solicitud.documentoLetra });
+            }
+
+            // Notificación
+            const notif = {
+                fecha: new Date().toLocaleDateString(),
+                mensaje: `✅ ¡Felicidades! Su solicitud de crédito por $${solicitud.monto} a ${solicitud.meses} meses ha sido APROBADA. Interés: ${solicitud.interes}% | Total: $${total.toFixed(2)} | Cuota: $${cuota.toFixed(2)}/mes`,
+                tipo: "aprobado"
+            };
+            await supabase
+                .from('notificaciones')
+                .insert([{
+                    socio_id: socio.id,
+                    fecha: notif.fecha,
+                    mensaje: notif.mensaje,
+                    tipo: notif.tipo
+                }]);
+            socio.notificaciones.push(notif);
+
+            // Actualizar solicitud
+            await supabase
+                .from('solicitudes_credito')
+                .update({ estado: 'aprobado' })
+                .eq('id', id);
+            solicitud.estado = 'aprobado';
+
+            // Actualizar socio en BD
+            await guardarDatos();
+            mostrarToast(`✅ Crédito aprobado para ${solicitud.socioNombre}`);
+            renderSolicitudes();
+            actualizarBadgeSolicitudes();
+        }
+
+        async function rechazarSolicitud(id) {
+            let solicitud = solicitudesCredito.find(s => s.id === id);
+            if (!solicitud) return;
+
+            let socio = socios.find(s => s.id === solicitud.socioId);
+            if (socio) {
+                const notif = {
+                    fecha: new Date().toLocaleDateString(),
+                    mensaje: `❌ Su solicitud de crédito por $${solicitud.monto} ha sido RECHAZADA. Motivo: No cumple con los requisitos del reglamento.`,
+                    tipo: "rechazado"
+                };
+                await supabase
+                    .from('notificaciones')
+                    .insert([{
+                        socio_id: socio.id,
+                        fecha: notif.fecha,
+                        mensaje: notif.mensaje,
+                        tipo: notif.tipo
+                    }]);
+                socio.notificaciones.push(notif);
+            }
+
+            await supabase
+                .from('solicitudes_credito')
+                .update({ estado: 'rechazado' })
+                .eq('id', id);
+            solicitud.estado = 'rechazado';
+
+            mostrarToast(`❌ Solicitud rechazada`);
+            renderSolicitudes();
+            actualizarBadgeSolicitudes();
+        }
+
+        // ============================================
+        // ADMIN: OTRAS FUNCIONES
+        // ============================================
+
+        function openSociosList() {
+            hideAllScreens();
+            document.getElementById("sociosListScreen").classList.add("active");
+            renderSocios();
+        }
+
+        function renderSocios() {
+            let c = document.getElementById("sociosContainer");
+            c.innerHTML = "";
+            socios.forEach((s, i) => c.innerHTML +=
+                `<div class="socio-item" onclick="openSocioDetail(${i})"><h3>${s.nombres} ${s.apellidos}</h3><p>${s.usuario}</p><p class="${s.enMora ? 'estado-mora' : 'estado-normal'}">${s.enMora ? 'MORA' : 'ACTIVO'}</p></div>`
+                );
+        }
+
+        function openSocioDetail(i) {
+            let s = socios[i];
+            hideAllScreens();
+            document.getElementById("detailSocioScreen").classList.add("active");
+            document.getElementById("detailContent").innerHTML = `
+                <div class="detail-box">
+                    <p><strong>Nombres:</strong> ${s.nombres}</p><br>
+                    <p><strong>Apellidos:</strong> ${s.apellidos}</p><br>
+                    <p><strong>Cédula:</strong> ${s.cedula}</p><br>
+                    <p><strong>Correo:</strong> ${s.correo}</p><br>
+                    <p><strong>Teléfono:</strong> ${s.telefono}</p><br>
+                    <p><strong>Capital Aportado:</strong> $${(s.capitalAportado || s.aporteInicial || 0).toFixed(2)}</p><br>
+                    <p><strong>Límite Crédito (3x1):</strong> $${calcularLimiteCredito(s.capitalAportado || s.aporteInicial || 0)}</p><br>
+                    <p><strong>Evaluación Anual:</strong> ${calcularEvaluacionSocio(s).toFixed(1)}%</p><br>
+                    <p><strong>Estado:</strong> <span class="${s.enMora ? 'estado-mora' : 'estado-normal'}">${s.enMora ? 'EN MORA' : 'ACTIVO'}</span></p><br>
+                    <p><strong>Mora Acumulada:</strong> $${(s.moraAcumulada || 0).toFixed(2)}</p>
+                </div>
+                ${s.documentos?.cedula ? `<div class="detail-box"><h3>📎 Documento de Identidad</h3><button class="btn-ver" onclick="verDocumento('${s.documentos.cedula}')">Ver Cédula</button></div>` : ''}
+            `;
+        }
+
+        function openPagosAportes() {
+            hideAllScreens();
+            document.getElementById("pagosAportesScreen").classList.add("active");
+            renderPagosAportes();
+        }
+
+        function renderPagosAportes() {
+            let container = document.getElementById("pagosAportesContainer");
+            let html =
+                `<div style="overflow-x:auto;"><table class="tabla-pagos"><thead><tr><th>Socio</th><th>Capital Actual</th>`;
+            meses.forEach(mes => { html += `<th colspan="2">${mes}</th>`; });
+            html += `<th>Total</th></tr><tr><th></th><th></th>`;
+            meses.forEach(() => { html += `<th>Aporte($5)</th><th>Rifa($1)</th>`; });
+            html += `<th></th></tr></thead><tbody>`;
+
+            socios.forEach((socio, index) => {
+                let totalCapital = socio.capitalAportado || socio.aporteInicial || 0;
+                html += `<tr><td><strong>${socio.nombres} ${socio.apellidos}</strong></td><td>$${totalCapital.toFixed(2)}</td>`;
+                meses.forEach(mes => {
+                    let aporteVal = socio.pagosMensuales?.[mes]?.aporte || 0;
+                    let rifaVal = socio.pagosMensuales?.[mes]?.rifa || 0;
+                    html +=
+                        `<td><input type="number" class="aporte-mes" data-id="${index}" data-mes="${mes}" data-tipo="aporte" value="${aporteVal}" step="0.01" style="width:80px;"></td>`;
+                    html +=
+                        `<td><input type="number" class="rifa-mes" data-id="${index}" data-mes="${mes}" data-tipo="rifa" value="${rifaVal}" step="0.01" style="width:80px;"></td>`;
+                    totalCapital += aporteVal + rifaVal;
+                });
+                html += `<td class="total-aportes" id="total-${index}">$${totalCapital.toFixed(2)}</td></tr>`;
+            });
+            html +=
+                `</tbody></table></div><button class="btn-guardar-pagos" onclick="guardarPagosAportes()">💾 Guardar Todos los Pagos (${APORTE_TOTAL_MENSUAL}/mes)</button>`;
+            container.innerHTML = html;
+
+            document.querySelectorAll('.aporte-mes, .rifa-mes').forEach(input => {
+                input.addEventListener('input', function() { actualizarTotalSocio(parseInt(this.dataset.id)); });
+            });
+        }
+
+        function actualizarTotalSocio(index) {
+            let total = socios[index].capitalAportado || socios[index].aporteInicial || 0;
+            meses.forEach(mes => {
+                let aporteVal = parseFloat(document.querySelector(
+                    `.aporte-mes[data-id="${index}"][data-mes="${mes}"]`)?.value) || 0;
+                let rifaVal = parseFloat(document.querySelector(
+                    `.rifa-mes[data-id="${index}"][data-mes="${mes}"]`)?.value) || 0;
+                total += aporteVal + rifaVal;
+            });
+            document.getElementById(`total-${index}`).innerHTML = `$${total.toFixed(2)}`;
+        }
+
+        async function guardarPagosAportes() {
+            socios.forEach((socio, index) => {
+                let totalCapital = socio.aporteInicial || 0;
+                meses.forEach(mes => {
+                    let aporteVal = parseFloat(document.querySelector(
+                        `.aporte-mes[data-id="${index}"][data-mes="${mes}"]`)?.value) || 0;
+                    let rifaVal = parseFloat(document.querySelector(
+                        `.rifa-mes[data-id="${index}"][data-mes="${mes}"]`)?.value) || 0;
+                    if (!socio.pagosMensuales) socio.pagosMensuales = {};
+                    if (!socio.pagosMensuales[mes]) socio.pagosMensuales[mes] = { aporte: 0, rifa: 0 };
+                    socio.pagosMensuales[mes].aporte = aporteVal;
+                    socio.pagosMensuales[mes].rifa = rifaVal;
+                    totalCapital += aporteVal + rifaVal;
+                });
+                socio.capitalAportado = totalCapital;
+            });
+            await guardarDatos();
+            alert(
+                `✅ Pagos guardados. Aporte mensual recomendado: $${APORTE_MENSUAL_BASE} + $${RIFA_MENSUAL} = $${APORTE_TOTAL_MENSUAL}`
+                );
+        }
+
+        function openReportes() {
+            hideAllScreens();
+            document.getElementById("reportesScreen").classList.add("active");
+            renderReportes();
+        }
+
+        function renderReportes() {
+            let totalCapital = socios.reduce((sum, s) => sum + (s.capitalAportado || 0), 0);
+            let totalCreditos = socios.reduce((sum, s) => sum + (s.valorCredito || 0), 0);
+            let totalPagado = socios.reduce((sum, s) => sum + (s.pagado || 0), 0);
+            let saldoPendiente = totalCreditos - totalPagado;
+            let totalMora = socios.reduce((sum, s) => sum + (s.moraAcumulada || 0), 0);
+            let sociosEnMora = socios.filter(s => s.enMora).length;
+            let utilidadesGeneradas = socios.reduce((sum, s) => sum + ((s.totalPagar - s.valorCredito) || 0), 0);
+
+            let container = document.getElementById("reportesContainer");
+            container.innerHTML = `
+                <div class="reporte-container">
+                    <h3>📊 BALANCE GENERAL</h3><br>
+                    <table class="reporte-tabla">
+                        <tr><th>Indicador</th><th>Valor</th></tr>
+                        <tr><td>Capital Total Aportado</td><td>$${totalCapital.toFixed(2)}</td></tr>
+                        <tr><td>Créditos Otorgados</td><td>$${totalCreditos.toFixed(2)}</td></tr>
+                        <tr><td>Pagos Recibidos</td><td>$${totalPagado.toFixed(2)}</td></tr>
+                        <tr><td>Saldo Pendiente</td><td>$${saldoPendiente.toFixed(2)}</td></tr>
+                        <tr><td>Caja General</td><td>$${cajaGeneral.toFixed(2)}</td></tr>
+                        <tr><td>Mora Acumulada</td><td>$${totalMora.toFixed(2)}</td></tr>
+                        <tr><td>Socios en Mora</td><td>${sociosEnMora}</td></tr>
+                        <tr><td>Utilidades Generadas</td><td>$${utilidadesGeneradas.toFixed(2)}</td></tr>
+                    </table>
+                </div>
+                <div class="reporte-container">
+                    <h3>📈 DETALLE POR SOCIO</h3><br>
+                    <table class="reporte-tabla">
+                        <tr><th>Socio</th><th>Capital</th><th>Crédito</th><th>Saldo</th><th>Evaluación</th><th>Estado</th></tr>
+                        ${socios.map(s => `<tr><td>${s.nombres} ${s.apellidos}</td><td>$${(s.capitalAportado || 0).toFixed(2)}</td><td>$${(s.valorCredito || 0).toFixed(2)}</td><td>$${(s.saldoPendiente || 0).toFixed(2)}</td><td>${calcularEvaluacionSocio(s).toFixed(1)}%</td><td class="${s.enMora ? 'estado-mora' : 'estado-normal'}">${s.enMora ? 'MORA' : 'ACTIVO'}</td></tr>`).join('')}
+                    </table>
+                </div>
+                <button class="btn-reporte" onclick="exportarReporte()">📥 Exportar Reporte</button>
+            `;
+        }
+
+        function exportarReporte() {
+            let contenido = "REPORTE NEXTAR\n";
+            contenido += "================\n\n";
+            socios.forEach(s => {
+                contenido += `${s.nombres} ${s.apellidos}\n`;
+                contenido += `Capital: $${(s.capitalAportado || 0).toFixed(2)}\n`;
+                contenido += `Crédito: $${(s.valorCredito || 0).toFixed(2)}\n`;
+                contenido += `Saldo: $${(s.saldoPendiente || 0).toFixed(2)}\n`;
+                contenido += `Evaluación: ${calcularEvaluacionSocio(s).toFixed(1)}%\n`;
+                contenido += `Estado: ${s.enMora ? 'MORA' : 'ACTIVO'}\n`;
+                contenido += "----------------\n";
+            });
+            let blob = new Blob([contenido], { type: "text/plain" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `reporte_nextar_${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+            mostrarToast("Reporte exportado");
+        }
+
+        function openDistribucionUtilidades() {
+            hideAllScreens();
+            document.getElementById("utilidadesScreen").classList.add("active");
+            renderDistribucionUtilidades();
+        }
+
+        function renderDistribucionUtilidades() {
+            let utilidadesGeneradas = socios.reduce((sum, s) => sum + ((s.totalPagar - s.valorCredito) || 0), 0);
+            let fondoContingencia = utilidadesGeneradas * 0.1;
+            let capitalizacion = utilidadesGeneradas * 0.1;
+            let distribucionSocios = utilidadesGeneradas * 0.8;
+
+            let evaluaciones = socios.map(s => ({ socio: s, evaluacion: calcularEvaluacionSocio(s) }));
+            let totalEvaluacion = evaluaciones.reduce((sum, e) => sum + e.evaluacion, 0);
+
+            let html = `
+                <div class="reporte-container">
+                    <h3>💰 DISTRIBUCIÓN DE UTILIDADES</h3><br>
+                    <p><strong>Utilidades Generadas:</strong> $${utilidadesGeneradas.toFixed(2)}</p>
+                    <p><strong>10% Fondo de Contingencia:</strong> $${fondoContingencia.toFixed(2)}</p>
+                    <p><strong>10% Capitalización Institucional:</strong> $${capitalizacion.toFixed(2)}</p>
+                    <p><strong>80% Distribución entre Socios:</strong> $${distribucionSocios.toFixed(2)}</p>
+                    <br>
+                    <h3>📊 DISTRIBUCIÓN POR SOCIO (según evaluación)</h3><br>
+                    <table class="reporte-tabla">
+                        <tr><th>Socio</th><th>Evaluación</th><th>Utilidad a Recibir</th></tr>
+                        ${evaluaciones.map(e => {
+                            let utilidad = (distribucionSocios * (e.evaluacion / totalEvaluacion)) || 0;
+                            return `<tr><td>${e.socio.nombres} ${e.socio.apellidos}</td><td>${e.evaluacion.toFixed(1)}%</td><td>$${utilidad.toFixed(2)}</td></tr>`;
+                        }).join('')}
+                    </table>
+                    <br>
+                    <button class="btn-save" onclick="confirmarDistribucion()">✅ Confirmar Distribución</button>
+                </div>
+            `;
+            document.getElementById("utilidadesContainer").innerHTML = html;
+        }
+
+        function confirmarDistribucion() {
+            alert("Distribución de utilidades registrada. Los valores han sido asignados a los socios.");
+            mostrarToast("✅ Distribución confirmada");
+        }
+
+        function verBalanceCaja() {
+            let totalCapital = socios.reduce((sum, s) => sum + (s.capitalAportado || 0), 0);
+            let totalCreditos = socios.reduce((sum, s) => sum + (s.valorCredito || 0), 0);
+            let totalPagado = socios.reduce((sum, s) => sum + (s.pagado || 0), 0);
+            let totalMora = socios.reduce((sum, s) => sum + (s.moraAcumulada || 0), 0);
+            alert(
+                `📊 BALANCE NEXTAR\n\n💰 Caja General: $${cajaGeneral}\n👥 Capital Socios: $${totalCapital}\n📈 Créditos: $${totalCreditos}\n💳 Pagos: $${totalPagado}\n⚠️ Mora: $${totalMora}\n🏦 Patrimonio: $${totalCapital + cajaGeneral}`
+                );
+        }
+
+        function actualizarCaja() {
+            let nuevo = prompt("Ingrese nuevo monto de caja:", cajaGeneral);
+            if (nuevo && !isNaN(nuevo)) { cajaGeneral = parseFloat(nuevo);
+                guardarDatos();
+                alert(`✅ Caja: $${cajaGeneral}`); }
+        }
+
+        function eliminarSociosView() {
+            hideAllScreens();
+            document.getElementById("eliminarSociosScreen").classList.add("active");
+            renderEliminarSocios();
+        }
+
+        function renderEliminarSocios() {
+            let c = document.getElementById("eliminarSociosContainer");
+            c.innerHTML = "";
+            socios.forEach((s, i) => c.innerHTML +=
+                `<div class="socio-item" style="border:1px solid #ef4444;" onclick="eliminarSocio(${i})"><h3>${s.nombres} ${s.apellidos}</h3><p style="color:#ef4444;">Eliminar ✖</p></div>`
+                );
+        }
+
+        async function eliminarSocio(i) {
+            if (confirm("¿Eliminar?")) {
+                const socioId = socios[i].id;
+                // Eliminar de la base de datos
+                await supabase.from('socios').delete().eq('id', socioId);
+                socios.splice(i, 1);
+                await guardarDatos();
+                renderEliminarSocios();
+                alert("Eliminado");
+            }
+        }
+
+        function openCreditosScreen() {
+            hideAllScreens();
+            document.getElementById("creditosScreen").classList.add("active");
+            renderCreditos();
+        }
+
+        function renderCreditos() {
+            let c = document.getElementById("creditosContainer");
+            c.innerHTML = "";
+            socios.forEach((s, i) => c.innerHTML +=
+                `<div class="socio-item" onclick="openManageCredito(${i})"><h3>${s.nombres}</h3><p class="${s.creditoActivo ? 'credit-status-active' : 'credit-status-inactive'}">${s.creditoActivo ? 'Crédito Activo' : 'Sin Crédito'}</p><p class="${s.enMora ? 'estado-mora' : 'estado-normal'}">${s.enMora ? 'MORA' : 'AL DÍA'}</p></div>`
+                );
+        }
+
+        function openManageCredito(i) {
+            socioCreditoActual = socios[i];
+            hideAllScreens();
+            document.getElementById("manageCreditoScreen").classList.add("active");
+            document.getElementById("creditoSocioNombre").innerHTML = "Crédito - " + socioCreditoActual.nombres;
+            document.getElementById("limiteMostrado").innerHTML = calcularLimiteCredito(socioCreditoActual.capitalAportado ||
+                socioCreditoActual.aporteInicial || 0);
+            if (!document.getElementById("fechaCredito").value) document.getElementById("fechaCredito").value = new Date()
+                .toISOString().split('T')[0];
+            if (!document.getElementById("fechaPagoCredito").value) document.getElementById("fechaPagoCredito").value =
+                new Date().toISOString().split('T')[0];
+            if (socioCreditoActual.mesesCredito > 0) calcularInteresAuto();
+            updateCreditoEstado();
+            mostrarHistorialPagos();
+            mostrarDocumentos();
+        }
+
+        function calcularInteresAuto() {
+            let monto = parseFloat(document.getElementById("nuevoMontoCredito").value) || 0;
+            let mesesCred = parseInt(document.getElementById("nuevoMesesCredito").value) || 0;
+            let limite = calcularLimiteCredito(socioCreditoActual.capitalAportado || socioCreditoActual.aporteInicial || 0);
+            if (monto > limite) {
+                document.getElementById("resumenCredito").innerHTML = `⚠️ El monto excede el límite de $${limite}`;
+            } else if (monto > 0 && mesesCred > 0) {
+                let interes = calcularInteresPorMeses(mesesCred);
+                let total = monto + (monto * interes / 100);
+                let cuota = total / mesesCred;
+                document.getElementById("resumenCredito").innerHTML =
+                    `Resumen: $${monto} a ${mesesCred} meses = ${interes}% interés → Total: $${total.toFixed(2)} (Cuota: $${cuota.toFixed(2)}/mes)`;
+            } else {
+                document.getElementById("resumenCredito").innerHTML = `Resumen: $0 a 0 meses = 0% interés → Total: $0`;
+            }
+        }
+
+        function mostrarDocumentos() {
+            let c = document.getElementById("documentosCredito");
+            if (!socioCreditoActual.documentos?.letraCambio?.length) {
+                c.innerHTML = '<p>No hay documentos adjuntos</p>';
+                return;
+            }
+            let html = '<ul class="documento-lista">';
+            socioCreditoActual.documentos.letraCambio.forEach(doc => {
+                html +=
+                    `<li>Letra de cambio - ${doc.fecha} <button class="btn-ver" onclick="verDocumento('${doc.documento}')">Ver</button></li>`;
+            });
+            html += '</ul>';
+            c.innerHTML = html;
+        }
+
+        function mostrarHistorialPagos() {
+            let c = document.getElementById("historialPagos");
+            if (!socioCreditoActual.historialPagos?.length) {
+                c.innerHTML = '<p style="color:#94a3b8;">No hay pagos registrados</p>';
+                return;
+            }
+            let html =
+                `<table class="tabla-historial"><thead><tr><th>Fecha</th><th>Monto</th><th>Saldo</th></tr></thead><tbody>`;
+            socioCreditoActual.historialPagos.forEach(p => {
+                html +=
+                    `<tr class="pago-realizado"><td>${p.fecha}</td><td>$${p.monto.toFixed(2)}</td><td>$${p.saldoRestante.toFixed(2)}</td></tr>`;
+            });
+            html += `</tbody></table>`;
+            c.innerHTML = html;
+        }
+
+        async function crearCredito() {
+            let monto = parseFloat(document.getElementById("nuevoMontoCredito").value);
+            let mesesCred = parseInt(document.getElementById("nuevoMesesCredito").value);
+            let fecha = document.getElementById("fechaCredito").value;
+            let limite = calcularLimiteCredito(socioCreditoActual.capitalAportado || socioCreditoActual.aporteInicial || 0);
+            if (!monto || !mesesCred) { alert("Complete los campos"); return; }
+            if (monto > limite) { alert(`El monto excede el límite de 3x su capital ($${limite})`); return; }
+            let { total, interes, cuota } = calcularTotalCredito(monto, mesesCred);
+            socioCreditoActual.creditoActivo = true;
+            socioCreditoActual.valorCredito = monto;
+            socioCreditoActual.mesesCredito = mesesCred;
+            socioCreditoActual.cuotaMensual = cuota.toFixed(2);
+            socioCreditoActual.totalPagar = total.toFixed(2);
+            socioCreditoActual.saldoPendiente = total.toFixed(2);
+            socioCreditoActual.pagado = 0;
+            socioCreditoActual.fechaCredito = fecha;
+            await guardarDatos();
+            updateCreditoEstado();
+            mostrarHistorialPagos();
+            alert(`✅ Crédito creado con ${interes}% de interés`);
+            document.getElementById("nuevoMontoCredito").value = "";
+            document.getElementById("nuevoMesesCredito").value = "";
+            calcularInteresAuto();
+        }
+
+        async function registrarPagoCredito() {
+            let pago = parseFloat(document.getElementById("valorPagoCredito").value);
+            let fecha = document.getElementById("fechaPagoCredito").value;
+            if (!pago || pago <= 0) { alert("Valor válido"); return; }
+            socioCreditoActual.pagado += pago;
+            let nuevoSaldo = socioCreditoActual.totalPagar - socioCreditoActual.pagado;
+            socioCreditoActual.saldoPendiente = nuevoSaldo.toFixed(2);
+            socioCreditoActual.historialPagos.push({ fecha: fecha, monto: pago, saldoRestante: parseFloat(socioCreditoActual
+                    .saldoPendiente) });
+
+            // Guardar historial en BD
+            await supabase
+                .from('historial_pagos')
+                .insert([{
+                    socio_id: socioCreditoActual.id,
+                    fecha: fecha,
+                    monto: pago,
+                    saldo_restante: parseFloat(socioCreditoActual.saldoPendiente)
+                }]);
+
+            if (socioCreditoActual.saldoPendiente <= 0) {
+                socioCreditoActual.creditoActivo = false;
+                socioCreditoActual.enMora = false;
+                socioCreditoActual.saldoPendiente = 0;
+                alert("🎉 Crédito pagado completamente!");
+            }
+            await guardarDatos();
+            updateCreditoEstado();
+            mostrarHistorialPagos();
+            document.getElementById("valorPagoCredito").value = "";
+            alert("✅ Pago registrado");
+        }
+
+        function updateCreditoEstado() {
+            let interes = socioCreditoActual.mesesCredito;
+            document.getElementById("estadoCreditoActual").innerHTML = `
+                <p><strong>Fecha:</strong> ${socioCreditoActual.fechaCredito || "N/A"}</p><br>
+                <p><strong>Estado:</strong> ${socioCreditoActual.creditoActivo ? 'Activo' : 'Pagado'}</p><br>
+                <p><strong>Monto:</strong> $${socioCreditoActual.valorCredito}</p><br>
+                <p><strong>Meses:</strong> ${socioCreditoActual.mesesCredito}</p><br>
+                <p><strong>Interés:</strong> ${interes}%</p><br>
+                <p><strong>Total:</strong> $${socioCreditoActual.totalPagar}</p><br>
+                <p><strong>Pagado:</strong> $${socioCreditoActual.pagado}</p><br>
+                <p><strong>Saldo:</strong> $${socioCreditoActual.saldoPendiente}</p><br>
+                <p><strong>Cuota:</strong> $${socioCreditoActual.cuotaMensual}</p>
+                ${socioCreditoActual.enMora ? `<div class="mora-alerta">⚠️ EN MORA - Interés del 2% mensual aplicado</div>` : ''}
+            `;
+        }
+
+        function openAsistenciaScreen() {
+            hideAllScreens();
+            document.getElementById("asistenciaScreen").classList.add("active");
+            renderAsistencia();
+        }
+
+        function renderAsistencia() {
+            let c = document.getElementById("asistenciaContainer");
+            c.innerHTML = "";
+            socios.forEach((s, i) => c.innerHTML +=
+                `<div class="socio-item" onclick="openManageAsistencia(${i})"><h3>${s.nombres}</h3><br><p style="color:#38bdf8;font-weight:bold;">Puntaje: ${s.puntajeAsistencia}/12</p></div>`
+                );
+        }
+
+        function openManageAsistencia(i) {
+            socioAsistenciaActual = socios[i];
+            hideAllScreens();
+            document.getElementById("manageAsistenciaScreen").classList.add("active");
+            document.getElementById("asistenciaNombreSocio").innerHTML = "Asistencia - " + socioAsistenciaActual.nombres;
+            renderMeses();
+        }
+
+        function renderMeses() {
+            let c = document.getElementById("checkboxesMeses");
+            c.innerHTML = "";
+            meses.forEach(m => {
+                let checked = socioAsistenciaActual.asistencias[m] ? "checked" : "";
+                c.innerHTML +=
+                    `<div class="mes-item"><label>${m}</label><input type="checkbox" ${checked} onchange="toggleAsistencia('${m}',this.checked)"></div>`;
+            });
+            updatePuntajeAsistencia();
+        }
+
+        async function toggleAsistencia(mes, estado) {
+            socioAsistenciaActual.asistencias[mes] = estado;
+            await guardarDatos();
+            updatePuntajeAsistencia();
+        }
+
+        function updatePuntajeAsistencia() {
+            let total = meses.filter(m => socioAsistenciaActual.asistencias[m]).length;
+            socioAsistenciaActual.puntajeAsistencia = total;
+            document.getElementById("puntajeAsistencia").innerHTML = total + "/12";
+            renderAsistencia();
+        }
+
+        // ============================================
+        // INICIAR APLICACIÓN
+        // ============================================
+
+        // Esperar a que el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarDatos();
+        });
+    </script>
+</body>
+</html>
